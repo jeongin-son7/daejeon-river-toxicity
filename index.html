@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>대전 하천 환경독성 디지털맵</title>
+<style>
+  body { margin:0; font-family: 'Apple SD Gothic Neo', sans-serif; background:#f4f1ea; color:#222; }
+  header { padding: 24px 20px 12px; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  p.sub { margin: 0; color:#555; font-size: 14px; }
+  #map { width: 100%; height: 480px; margin-top: 16px; }
+  .legend { display:flex; gap:16px; padding: 12px 20px; font-size: 13px; flex-wrap: wrap; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  footer { padding: 16px 20px; font-size:12px; color:#888; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>물벼룩이 보낸 경고장</h1>
+  <p class="sub">대전 3대 하천(대전천·유등천·갑천) 샘플링 지점의 환경독성지수</p>
+</header>
+
+<div id="map"></div>
+
+<div class="legend">
+  <span><span class="dot" style="background:#5DCAA5"></span>양호</span>
+  <span><span class="dot" style="background:#F2A623"></span>주의</span>
+  <span><span class="dot" style="background:#E24B4A"></span>심각</span>
+</div>
+
+<footer>대전과학고 카피바라 동아리 — 공공 수질데이터 + 물벼룩 LC50/ROS 실험 결합</footer>
+
+<!--
+  ★ 여기에 카카오에서 발급받은 JavaScript 키를 넣으세요 ★
+  카카오 디벨로퍼스 > 앱 설정 > 플랫폼 키 > JavaScript 키 복사
+-->
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=여기에_JavaScript_키_입력"></script>
+<script>
+  // 대전 3대 하천 샘플링 지점 (좌표는 예시값 — 실제 채수 지점 좌표로 교체하세요)
+  var points = [
+    { name: "대전천 지점", lat: 36.3504, lng: 127.4047, level: "danger",  toxicity: "독성지수 4.2 / 5 (심각)" },
+    { name: "유등천 지점", lat: 36.3219, lng: 127.3850, level: "warning", toxicity: "독성지수 2.8 / 5 (주의)" },
+    { name: "갑천 지점",   lat: 36.3789, lng: 127.3540, level: "good",    toxicity: "독성지수 1.5 / 5 (양호)" }
+  ];
+
+  var colorMap = { good: "#5DCAA5", warning: "#F2A623", danger: "#E24B4A" };
+
+  var container = document.getElementById('map');
+  var options = {
+    center: new kakao.maps.LatLng(36.3504, 127.3850), // 대전 중심부 근처
+    level: 8
+  };
+  var map = new kakao.maps.Map(container, options);
+
+  points.forEach(function (p) {
+    var markerPosition = new kakao.maps.LatLng(p.lat, p.lng);
+
+    // 색상이 들어간 커스텀 오버레이 (독성 등급별 색)
+    var content = document.createElement('div');
+    content.style.cssText =
+      "width:16px;height:16px;border-radius:50%;border:2px solid white;box-shadow:0 0 4px rgba(0,0,0,0.4);background:" +
+      colorMap[p.level];
+
+    var overlay = new kakao.maps.CustomOverlay({
+      position: markerPosition,
+      content: content
+    });
+    overlay.setMap(map);
+
+    // 클릭 시 정보창 (지금은 클릭 영역을 위해 투명 마커도 같이 둠)
+    var marker = new kakao.maps.Marker({
+      position: markerPosition,
+      opacity: 0
+    });
+    marker.setMap(map);
+
+    var infowindow = new kakao.maps.InfoWindow({
+      content: '<div style="padding:8px 10px;font-size:13px;line-height:1.5;">' +
+               '<strong>' + p.name + '</strong><br/>' + p.toxicity + '</div>'
+    });
+
+    kakao.maps.event.addListener(marker, 'click', function () {
+      infowindow.open(map, marker);
+    });
+  });
+</script>
+
+</body>
+</html>
